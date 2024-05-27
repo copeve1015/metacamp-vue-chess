@@ -18,5 +18,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-  base: '/metacamp-vue-chess/'
+  base: '/metacamp-vue-chess/',
+  publicDir: 'public',
+  build: {outDir: 'dist'}
 })
