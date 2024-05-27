@@ -7,6 +7,9 @@ import { BootstrapVueNextResolver } from 'unplugin-vue-components/resolvers'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/metacamp-vue-chess/',
+  publicDir: 'public',
+  build: {outDir: 'dist'},
   plugins: [
     vue(),
     Components({
@@ -17,8 +20,5 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-  },
-  base: '/metacamp-vue-chess/',
-  publicDir: 'public',
-  build: {outDir: 'dist'}
+  }
 })
