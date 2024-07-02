@@ -5,7 +5,6 @@
     <BCollapse id="nav-collapse" is-nav>
       <BNavbarNav>
         <BNavItem to="/game">Game</BNavItem>
-        <BNavItem href="#">Log</BNavItem>
       </BNavbarNav>
     </BCollapse>
   </BNavbar>

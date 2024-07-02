@@ -17,6 +17,8 @@ const promotionPosition = ref([])
 const winnerModal = ref(false)
 const winner = ref('')
 
+const chessLog = ref('')
+
 const handlePromotion = (piece) => {
   let nPiece = piece
   if (promotionColor.value === 'white') {
@@ -1149,7 +1151,7 @@ const calculateCheckmate = (board) => {
           </BRow>
         </BCol>
         <BCol class="col-5 right-side">
-          <p>여기에 텍스트가 출력됩니다.</p>
+          <p>{{ chessLog }}</p>
         </BCol>
       </BRow>
     </BContainer>
