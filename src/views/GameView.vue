@@ -17,8 +17,6 @@ const promotionPosition = ref([])
 const winnerModal = ref(false)
 const winner = ref('')
 
-const chessLog = ref('')
-
 const handlePromotion = (piece) => {
   let nPiece = piece
   if (promotionColor.value === 'white') {
@@ -472,6 +470,7 @@ const clickChessBoard = (row, col) => {
     }
     // 캐슬링일 때
     if ((piece === 6 || piece === 13) && Math.abs(selectedPiece.value[1] - col) == 2) {
+      console.log('piece : ', piece, selectedPiece.value[1], col);
       let add = 0
       if (piece === 13) {
         isMovedCastling.value.WK = true
@@ -480,7 +479,7 @@ const clickChessBoard = (row, col) => {
         isMovedCastling.value.BK = true
       }
       // 퀸사이드 캐슬링
-      if (selectedPiece.value[0] > row) {
+      if (selectedPiece.value[1] > col) {
         chessBoard.value[selectedPiece.value[0]][3] = 4 + add
         chessBoard.value[selectedPiece.value[0]][0] = 0
       }
@@ -1105,17 +1104,12 @@ const calculateCheckmate = (board) => {
           <BRow>
             <BCol class="col-8 offset-2 square-container">
               <div v-for="(chessRow, row) in chessBoard" :key="row">
-                <div
-                  v-for="(chess, col) in chessRow"
-                  :key="col"
-                  class="square"
-                  @click.stop="clickChessBoard(row, col)"
+                <div v-for="(chess, col) in chessRow" :key="col" class="square" @click.stop="clickChessBoard(row, col)"
                   :style="`top: ${(row * 100) / 8}%; left: ${(col * 100) / 8}%;
-                  background: ${
-                    selectedPiece[0] === row && selectedPiece[1] === col
+                  background: ${selectedPiece[0] === row && selectedPiece[1] === col
                       ? 'green'
                       : (chessBoard[row][col] === 6 && isWhiteChecked) ||
-                          (chessBoard[row][col] === 13 && isBlackChecked)
+                        (chessBoard[row][col] === 13 && isBlackChecked)
                         ? 'red'
                         : isCanMovePiece(row, col)
                           ? (row + col) % 2 == 0
@@ -1124,114 +1118,85 @@ const calculateCheckmate = (board) => {
                           : (row + col) % 2 == 0
                             ? 'lightgray'
                             : 'gray'
-                  };`"
-                >
-                  <div
-                    @mouseenter.stop="
-                      (e) => {
-                        handleChessMouseOver(row, col, e)
-                      }
-                    "
-                    :style="` color: ${chess > 7 ? 'ivory' : chess != 0 ? 'black' : 'purple'}`"
-                  >
-                    <svg-icon
-                      class="svg-image"
-                      type="mdi"
-                      :path="`${chessIcons[chess % 7]}`"
-                    ></svg-icon>
+                    };`">
+                  <div @mouseenter.stop="(e) => {
+                      handleChessMouseOver(row, col, e)
+                    }
+                    " :style="` color: ${chess > 7 ? 'ivory' : chess != 0 ? 'black' : 'purple'}`">
+                    <svg-icon class="svg-image" type="mdi" :path="`${chessIcons[chess % 7]}`"></svg-icon>
                   </div>
                 </div>
               </div>
             </BCol>
+            <BCol class="d-flex flex-column justify-content-between col-2" style="background-color: forestgreen; padding: 4px;">
+              <BRow class="d-flex flex-row flex-wrap">
+                <div v-for="n in 6" :key="n" class="d-flex">
+                  <div v-for="count in capturedPiece.filter(p => p === n).length" :key="n + '-' + count" style="width: 24px; color: black;">
+                    <svg-icon class="svg-image" type="mdi" :path="`${chessIcons[n]}`"></svg-icon>
+                  </div>
+                </div>
+              </BRow>
+              <BRow>
+                <div v-for="n in 6" :key="n + 7" class="d-flex">
+                  <div v-for="count in capturedPiece.filter(p => p === n + 7).length" :key="(n + 7) + '-' + count" style="width: 24px; color: ivory">
+                    <svg-icon class="svg-image" type="mdi" :path="`${chessIcons[n]}`"></svg-icon>
+                  </div>
+                </div>
+              </BRow>
+            </BCol>
           </BRow>
           <BRow class="mt-4">
-            <BButton class="offset-1 col-3" variant="outline-success" @click="resetChessBoard"
-              >초기화</BButton
-            >
+            <BButton class="offset-1 col-3" variant="outline-success" @click="resetChessBoard">초기화</BButton>
           </BRow>
         </BCol>
         <BCol class="col-5 right-side">
-          <p>{{ chessLog }}</p>
+          <p>{{ capturedPiece }}</p>
         </BCol>
       </BRow>
     </BContainer>
-    <BModal
-      v-model="preventableModal"
-      title="Hello, World!"
-      @hide.prevent
-      :hideFooter="true"
-      :hideHeader="true"
-    >
-      <BContainer
-        fluid
-        class="d-flex justify-content-center flex-grow-1"
-        style="height: 20vh; background-color: green"
-      >
+    <BModal v-model="preventableModal" title="Hello, World!" @hide.prevent :hideFooter="true" :hideHeader="true">
+      <BContainer fluid class="d-flex justify-content-center flex-grow-1" style="height: 20vh; background-color: green">
         <div class="col-3 d-flex justify-content-center align-items-center" style="color: white">
           프로모션 :
         </div>
-        <div
-          class="col-1 d-flex justify-content-center align-items-center"
-          :style="`color: ${promotionColor}`"
-          @mouseenter.stop="
-            (e) => {
+        <div class="col-1 d-flex justify-content-center align-items-center" :style="`color: ${promotionColor}`"
+          @mouseenter.stop="(e) => {
               e.target.style.cursor = 'pointer'
             }
-          "
-          @click.stop="
-            () => {
+            " @click.stop="() => {
               handlePromotion(2)
             }
-          "
-        >
+            ">
           <svg-icon class="svg-image" type="mdi" :path="mdiChessBishop"></svg-icon>
         </div>
-        <div
-          class="col-1 d-flex justify-content-center align-items-center"
-          :style="`color: ${promotionColor}`"
-          @mouseenter.stop="
-            (e) => {
+        <div class="col-1 d-flex justify-content-center align-items-center" :style="`color: ${promotionColor}`"
+          @mouseenter.stop="(e) => {
               e.target.style.cursor = 'pointer'
             }
-          "
-          @click.stop="
-            () => {
+            " @click.stop="() => {
               handlePromotion(3)
             }
-          "
-        >
+            ">
           <svg-icon class="svg-image" type="mdi" :path="mdiChessKnight"></svg-icon>
         </div>
-        <div
-          class="col-1 d-flex justify-content-center align-items-center"
-          :style="`color: ${promotionColor}`"
-          @mouseenter.stop="
-            (e) => {
+        <div class="col-1 d-flex justify-content-center align-items-center" :style="`color: ${promotionColor}`"
+          @mouseenter.stop="(e) => {
               e.target.style.cursor = 'pointer'
             }
-          "
-          @click.stop="
-            () => {
+            " @click.stop="() => {
               handlePromotion(4)
             }
-          "
-        >
+            ">
           <svg-icon class="svg-image" type="mdi" :path="mdiChessRook"></svg-icon>
         </div>
-        <div
-          class="col-1 d-flex justify-content-center align-items-center"
-          :style="`color: ${promotionColor}`"
-          @mouseenter.stop="
-            (e) => {
+        <div class="col-1 d-flex justify-content-center align-items-center" :style="`color: ${promotionColor}`"
+          @mouseenter.stop="(e) => {
               e.target.style.cursor = 'pointer'
             }
-          "
-          @click.stop="
-            () => {
+            " @click.stop="() => {
               handlePromotion(5)
             }
-          "
-        >
+            ">
           <svg-icon class="svg-image" type="mdi" :path="mdiChessQueen"></svg-icon>
         </div>
       </BContainer>
