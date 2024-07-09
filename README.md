@@ -20,6 +20,12 @@ npm run dev
 npm run build
 ```
 
+### Compile and Minify for Production && Deploy gh-pages
+
+```sh
+npm run deploy
+```
+
 ### Lint with [ESLint](https://eslint.org/)
 
 ```sh
